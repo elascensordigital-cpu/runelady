@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f9efe4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Rune Lady">
+
+  <title>Rune Lady</title>
+  <meta name="description" content="Tu oráculo de runas. Descubre una de las 24 runas al azar.">
+
+  <!-- Configuración PWA -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
+  <style>
+    :root {
+      --cream: #f9efe4;
+      --ink: #24201e;
+      --pink: #eaa4b5;
+      --coral: #d95842;
+      --sage: #a7c6b4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100svh;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: Georgia, 'Times New Roman', serif;
+      display: grid;
+      place-items: center;
+      background-image: radial-gradient(
+        #cdaea33b .65px,
+        transparent .65px
+      );
+      background-size: 7px 7px;
+    }
+
+    .app {
+      width: min(100%, 470px);
+      min-height: 100svh;
+      padding: 32px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .sparkle {
+      color: var(--coral);
+      font-size: 27px;
+      letter-spacing: 20px;
+      margin: 0 0 12px 20px;
+    }
+
+    h1 {
+      font-size: clamp(43px, 11vw, 65px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin: 0;
+      color: var(--coral);
+      text-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .subtitle {
+      font-family: Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      margin: 15px 0 30px;
+    }
+
+    .rune-button {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      width: min(70vw, 290px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      transition: transform .2s;
+    }
+
+    .rune-button:hover {
+      transform: scale(1.045);
+    }
+
+    .rune-button:active {
+      transform: scale(.96);
+    }
+
+    .rune-button img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 1px #24201e1a);
+    }
+
+    .hint {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 24px 0 0;
+    }
+
+    .card-button {
+      border: 0;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+      width: min(100%, 310px);
+      display: block;
+      animation: appear .45s ease both;
+    }
+
+    .card-button img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 12px 35px #4b2c2725;
+    }
+
+    .card-button:focus-visible,
+    .rune-button:focus-visible,
+    .back:focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 5px;
+    }
+
+    .back {
+      background: var(--pink);
+      border: 2px solid var(--ink);
+      border-radius: 100px;
+      padding: 12px 25px;
+      margin-top: 23px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 3px 4px 0 var(--ink);
+    }
+
+    .back:active {
+      box-shadow: 0 0 0 var(--ink);
+      transform: translate(3px, 4px);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .error {
+      font: 13px Arial, sans-serif;
+      color: #a22;
+      max-width: 300px;
+      margin-top: 15px;
+    }
+
+    #result {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #result .subtitle {
+      margin-bottom: 18px;
+    }
+
+    @media (max-height: 700px) {
+      .app {
+        padding-top: 18px;
+        padding-bottom: 18px;
+      }
+
+      .subtitle {
+        margin-bottom: 15px;
+      }
+
+      .card-button {
+        width: min(100%, 250px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <div class="sparkle" aria-hidden="true">
+      ✦ ✧ ✦
+    </div>
+
+    <h1>RUNE LADY</h1>
+
+    <!-- Pantalla de inicio -->
+    <section id="home">
+
+      <p class="subtitle">
+        Tu oráculo de runas
+      </p>
+
+      <button
+        class="rune-button"
+        id="draw"
+        aria-label="Descubrir una runa"
+      >
+        <img
+          src="./rune.png"
+          alt="Toca para descubrir tu runa"
+        >
+      </button>
+
+      <p class="hint">
+        Toca para descubrir tu runa
+      </p>
+
+    </section>
+
+    <!-- Pantalla de resultado -->
+    <section
+      id="result"
+      hidden
+      aria-live="polite"
+    >
+
+      <p class="subtitle">
+        Tu runa es…
+      </p>
+
+      <button
+        class="card-button"
+        id="again"
+        aria-label="Sacar otra runa"
+      >
+        <img
+          id="card"
+          alt="Carta rúnica"
+        >
+      </button>
+
+      <p class="hint">
+        Toca la carta para otra tirada
+      </p>
+
+      <button
+        class="back"
+        id="back"
+      >
+        Volver al inicio
+      </button>
+
+      <p
+        id="error"
+        class="error"
+        hidden
+      ></p>
+
+    </section>
+
+  </main>
+
+  <script>
+    'use strict';
+
+    // Las 24 runas
+    const cards = [
+      '01_Fehu.png',
+      '02_Uruz.png',
+      '03_Thurisaz.png',
+      '04_Ansuz.png',
+      '05_Raidho.png',
+      '06_Kenaz.png',
+      '07_Gebo.png',
+      '08_Wunjo.png',
+      '09_Hagalaz.png',
+      '10_Nauthiz.png',
+      '11_Isa.png',
+      '12_Jera.png',
+      '13_Eihwaz.png',
+      '14_Perthro.png',
+      '15_Algiz.png',
+      '16_Sowilo.png',
+      '17_Tiwaz.png',
+      '18_Berkano.png',
+      '19_Ehwaz.png',
+      '20_Mannaz.png',
+      '21_Laguz.png',
+      '22_Ingwaz.png',
+      '23_Dagaz.png',
+      '24_Othala.png'
+    ];
+
+    const home = document.getElementById('home');
+    const result = document.getElementById('result');
+    const card = document.getElementById('card');
+    const error = document.getElementById('error');
+
+    let previous = -1;
+
+    // Seleccionar una runa aleatoria
+    function draw() {
+
+      let index = Math.floor(
+        Math.random() * cards.length
+      );
+
+      // Evitar repetir la runa inmediatamente anterior
+      if (index === previous) {
+        index = (
+          index +
+          1 +
+          Math.floor(
+            Math.random() * (cards.length - 1)
+          )
+        ) % cards.length;
+      }
+
+      previous = index;
+
+      const name = cards[index]
+        .replace(/^\d+_/, '')
+        .replace('.png', '');
+
+      card.src = './' + cards[index];
+      card.alt = 'Runa ' + name;
+
+      error.hidden = true;
+
+      home.hidden = true;
+      result.hidden = false;
+    }
+
+    // Botón de primera tirada
+    document
+      .getElementById('draw')
+      .addEventListener('click', draw);
+
+    // Botón para sacar otra runa
+    document
+      .getElementById('again')
+      .addEventListener('click', draw);
+
+    // Volver al inicio
+    document
+      .getElementById('back')
+      .addEventListener('click', () => {
+
+        result.hidden = true;
+        home.hidden = false;
+
+        document
+          .getElementById('draw')
+          .focus();
+      });
+
+    // Aviso si falta una imagen
+    card.addEventListener('error', () => {
+
+      error.textContent =
+        'No se encuentra ' +
+        card.getAttribute('src') +
+        '. Comprueba que esté junto al index.html.';
+
+      error.hidden = false;
+    });
+
+    // Registro del Service Worker
+    if ('serviceWorker' in navigator) {
+
+      window.addEventListener('load', () => {
+
+        navigator.serviceWorker
+          .register('./service-worker.js', {
+            scope: './'
+          })
+          .then(registration => {
+
+            console.log(
+              'Service Worker registrado:',
+              registration.scope
+            );
+
+          })
+          .catch(error => {
+
+            console.error(
+              'Error al registrar Service Worker:',
+              error
+            );
+
+          });
+
+      });
+
+    }
+  </script>
+
+</body>
+</html>
